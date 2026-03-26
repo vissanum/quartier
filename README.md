@@ -1,23 +1,29 @@
 # Quartier
 
-AI-powered toolkit for finding local businesses that need a website redesign — and building it for them.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Docker](https://img.shields.io/badge/Docker-ready-blue.svg)](Dockerfile)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-## What is this?
+Turn any AI into a web design business.
 
-A complete toolkit + business model for offering affordable web redesign services to small local businesses. The kind that still have a website from 2008 or no website at all.
+## Who is this for?
 
-This is not a website builder. It's a full workflow powered by AI:
+Anyone with basic computer skills who wants to earn a living creating websites for local businesses in their community. You don't need to be a programmer. You don't need to know HTML. You just need access to a powerful AI (like Claude, Gemini, or ChatGPT) and Docker installed on your computer.
 
-1. **Prospect** — Search Google Maps for local businesses in any neighborhood
-2. **Analyze** — Automatically evaluate their current website (or lack thereof)
-3. **Scrape** — Download the entire existing site (content, images, structure)
+This is not a website builder like WordPress. It's simpler than that: you talk to an AI, and the AI builds professional websites for you. Your job is to find businesses that need a website, show them what you can do, and charge for it.
+
+**This works anywhere in the world.** A person in Dakar, Bogota, or Casablanca can offer the same service to businesses in their neighborhood.
+
+## How it works
+
+1. **Find businesses** — The tools search Google Maps for local businesses in any neighborhood
+2. **Analyze** — Automatically evaluate their current website (or if they don't have one)
+3. **Download** — Scrape the entire existing site (content, images, structure)
 4. **Redesign** — The AI generates a complete modern website
-5. **Present** — Show the client a before/after comparison
-6. **Deploy** — Put the new site live
+5. **Present** — Show the business owner a before/after comparison
+6. **Get paid** — You deliver a professional website at a price that works for your market
 
-**You talk to the AI, the AI does the work.** The `CLAUDE.md` file is the playbook — it tells the AI how to use the scripts, what to analyze, and how to build the redesign. You bring the human touch: knocking on doors, understanding what the local bakery actually needs, and pricing it right for your market.
-
-**This works anywhere in the world.** A developer in Lagos, Lima, or Lahore can run the exact same process for businesses in their area.
+You talk to the AI, the AI does the heavy lifting. The `PLAYBOOK.md` file tells the AI exactly what to do — how to use the scripts, what to analyze, and how to build the redesign. You bring the human side: finding clients, understanding what the local bakery actually needs, and building trust in your community.
 
 ## Requirements
 
@@ -29,7 +35,7 @@ This is not a website builder. It's a full workflow powered by AI:
 
 ```bash
 # Clone the repo — this becomes your workspace
-git clone https://github.com/enriquee/quartier.git my-business
+git clone https://github.com/EnriqueLop/quartier.git my-business
 cd my-business
 
 # Configure your API key
@@ -46,36 +52,30 @@ cp config.operator.example.json config.operator.json
 
 No `npm install` needed. The first time you run `./run.sh`, Docker builds the image locally.
 
-## How it works
+## What a session looks like
 
-You open Claude Code (or any AI with terminal access) in this directory. The AI reads `CLAUDE.md` and knows how to:
+You open your AI assistant in this directory and have a conversation:
 
-- Search for businesses: `./run.sh node prospect/search.js "Kreuzberg, Berlin"`
-- Analyze their websites: `./run.sh node prospect/fetch.js https://example.com --screenshot`
-- Scrape entire sites: `./run.sh node scraper/scrape-site.js https://example.com my-project`
-- Get Google reviews: `./run.sh node scraper/google-places.js "Business Name" "City" my-project`
-- Optimize images: `./run.sh ./tools/optimize-images.sh projects/my-project/redesign/assets`
-- Validate HTML: `./run.sh bash tools/validate-html.sh projects/my-project/redesign`
+> **You:** "Search for businesses in Kreuzberg, Berlin"
+>
+> **AI:** *searches Google Maps, finds 40 businesses, evaluates their websites, presents candidates*
+>
+> **You:** "Redesign the website for that bakery"
+>
+> **AI:** *downloads the site, analyzes branding, gets Google reviews, generates a modern website*
+>
+> **You:** "Looks good, show me"
 
-All commands run inside Docker via `./run.sh`. You don't need Node.js installed.
+You open the result in your browser. If you like it, you show it to the bakery owner.
 
-### The AI does the heavy lifting
-
-You say "redesign this website" and the AI:
-1. Scrapes the original site (all pages, images, content)
-2. Analyzes the business (branding, colors, services, contact info)
-3. Downloads Google reviews and photos
-4. Generates a complete modern responsive website
-5. Creates a before/after showcase to present to the client
-
-You review the result locally by opening `projects/<name>/redesign/index.html` in your browser.
+Under the hood, the AI runs scripts via Docker — you don't need to know how they work. The `PLAYBOOK.md` file teaches the AI the whole process.
 
 ## Project structure
 
 ```
 .env                         ← your API key (not committed)
 config.operator.json         ← your name/email/website (not committed)
-CLAUDE.md                    ← the AI playbook
+PLAYBOOK.md                  ← instructions for the AI
 run.sh                       ← Docker wrapper for all scripts
 
 projects/<name>/
@@ -101,7 +101,7 @@ templates/                   ← legal page templates (Spanish law)
 
 - The legal templates (`templates/`) are for **Spanish law** (LSSI-CE, RGPD). Adapt them to your local regulations.
 - The business types in `prospects/config.json` are in Spanish. Edit them for your area.
-- The `CLAUDE.md` playbook is in Spanish. You can translate it or ask the AI to work in your language.
+- The `PLAYBOOK.md` is in English. The AI can work in any language — just talk to it in yours.
 
 ## API costs
 
