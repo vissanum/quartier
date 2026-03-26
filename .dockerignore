@@ -1,0 +1,14 @@
+.env
+config.operator.json
+.claude
+.git
+.github
+node_modules
+prospects/prospects.json
+prospects/searches.json
+prospects/fetched
+prospects/analysis
+projects
+planes
+pipeline.html
+.DS_Store

@@ -1,0 +1,33 @@
+node_modules/
+.DS_Store
+
+# Secrets and personal config
+.env
+.env.local
+config.operator.json
+
+# Claude Code local settings (may contain API keys)
+.claude/settings.local.json
+
+# Prospect data (contains real business info)
+prospects/prospects.json
+prospects/searches.json
+prospects/fetched/
+prospects/analysis/
+
+# Project data (contains client info)
+projects/
+
+# Internal plans and notes
+planes/
+
+# Generated files
+pipeline.html
+
+# Docker artifacts
+docker/analyzer/node_modules/
+
+# OS files
+Thumbs.db
+*.swp
+*.swo

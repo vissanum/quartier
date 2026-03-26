@@ -1,0 +1,13 @@
+{
+  "businessTypes": [
+    "restaurante", "bar", "cafetería", "peluquería",
+    "clínica dental", "fisioterapia", "psicólogo", "podólogo",
+    "veterinaria", "abogado", "asesoría", "gestoría",
+    "taller mecánico", "academia", "autoescuela",
+    "inmobiliaria", "gimnasio", "yoga", "pilates",
+    "hotel", "hostal", "casa rural",
+    "óptica", "floristería", "joyería", "ferretería",
+    "papelería", "librería", "panadería", "pastelería",
+    "tienda de ropa", "estudio de tatuaje"
+  ]
+}

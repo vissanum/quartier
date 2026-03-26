@@ -1,0 +1,8 @@
+{
+  "name": "prospect-analyzer",
+  "private": true,
+  "dependencies": {
+    "puppeteer": "^24.0.0",
+    "lighthouse": "^12.0.0"
+  }
+}
