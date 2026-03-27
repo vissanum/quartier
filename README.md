@@ -1,10 +1,16 @@
-# Quartier
+<p align="center">
+  <img src="assets/logo-heron-hunting-transparent.png" alt="Quartier logo" width="200">
+</p>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Docker](https://img.shields.io/badge/Docker-ready-blue.svg)](Dockerfile)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+<h1 align="center">Quartier</h1>
 
-Turn any AI into a web design business.
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+  <a href="Dockerfile"><img src="https://img.shields.io/badge/Docker-ready-blue.svg" alt="Docker"></a>
+  <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
+</p>
+
+<p align="center">Turn any AI into a web design business.</p>
 
 ## Who is this for?
 
