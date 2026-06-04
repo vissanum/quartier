@@ -36,6 +36,20 @@ All scripts run inside Docker via `./run.sh`:
 | `./run.sh ./tools/optimize-images.sh <assets-dir> [--webp]` | Optimize images |
 | `./run.sh bash tools/validate-html.sh <directory>` | Validate HTML |
 
+### Sell (run on the HOST, not in Docker)
+| Command | What it does |
+|---------|-------------|
+| `node cockpit/server.js` | Unified local UI at http://localhost:3458 (pipeline, prospects, jobs, deploy, outreach, follow-ups, suppression) |
+| `node prospect/enrich-emails.js --pending` | Find business emails on prospects' websites |
+| `node deploy/publish.js <name> [--no-push]` | Publish demo to the public website repo (git push → CI deploys) |
+| `node outreach/send.js <name> [--variant a\|b] [--send]` | Compose outreach email (preview by default; `--send` requires RESEND_API_KEY) |
+| `node outreach/followups.js [--days 4] [--max 3]` | List prospects due a follow-up touch (read-only) |
+| `node outreach/suppression.js add\|remove\|list <email>` | Manage the "BAJA" suppression list |
+| `node tools/preview.js <dir> [port]` | Static preview server with live reload |
+| `node tools/reset-data.js [--yes]` | Clean slate: wipe projects/prospects sample data (dry-run by default; never touches config, suppression list or the public repo) |
+
+Deploy/outreach config lives in `config.operator.json` (`deploy.repoPath`, `resend.from`, `tracking`…) and `.env` (`RESEND_API_KEY`).
+
 ---
 
 ## Prospecting flow
@@ -150,6 +164,20 @@ Create `projects/<name>/config.json` with all extracted info. This feeds the gen
 
 Save in `projects/<name>/redesign/assets/`.
 
+### Design quality bar (applies to EVERY generated page)
+
+The redesign must look hand-crafted for this business, not AI-generated. Hard rules:
+
+- **No emojis as icons.** Use inline SVG icons or none. Emoji service grids scream "AI template".
+- **Real photos beat everything**: original site assets > Google Places photos > nothing. AI-generated images only as a last resort, and never for people or food.
+- **Typography with character**: pick ONE distinctive display font that fits the trade (a barbershop ≠ a law firm) paired with a quiet body font. Never Inter/Roboto/Arial/system-only. Vary fonts across projects — two clients must never receive the same-looking site.
+- **The business's own colors**, deepened — never invent a palette, never default to purple gradients or generic blue.
+- **No filler copy**: every sentence must come from the original content, reviews, or verifiable facts. No "soluciones integrales", no generic mission statements.
+- **Hierarchy you can squint at**: one clear primary action per page (call, book, visit). If everything is bold, nothing is.
+- **Specific beats generic**: real opening hours over "always available", real street name in the hero over "your trusted partner".
+
+Before showing the user, ask: would another AI given the same config produce this exact page? If yes, it's not done.
+
 ### 5. Create the HOME redesign
 
 Generate a complete, modern, responsive home page with all the business info. Requirements:
@@ -230,7 +258,80 @@ Tell the user the page is ready for review. **DO NOT deploy. Wait for user appro
 
 ### 12. Deploy (only when user asks)
 
-Copy to deploy directory and convert relative paths to absolute. The deploy process depends on the user's hosting setup.
+```bash
+node deploy/publish.js <name>            # build, rewrite paths, commit, push
+node deploy/publish.js <name> --no-push  # inspect locally first
+```
+
+Runs on the HOST (needs git + SSH keys). Publishes showcase + redesign to
+`<deploy.repoPath>/public/webs/<name>/` and records the public URL in
+`pipeline.json`. Demos keep `noindex`. The website repo's CI does the rest.
+
+Notes:
+- **Reserved slugs:** `index` and `assets` are always refused as project names.
+  If your `/webs` section also hosts your own pages (a landing, an intake form,
+  a privacy policy), list them in `deploy.reservedSlugs` in
+  `config.operator.json` so a project can never shadow them.
+- **Visit tracking:** if `config.operator.json` has a `tracking` block
+  (`{"provider":"goatcounter","goatcounter":{"code":"..."}}` or
+  `{"provider":"beacon","endpoint":"https://..."}`), publish.js injects the
+  snippet into every published page so you can tell whether a prospect opened
+  their demo. No tracking block → pages publish untouched.
+
+---
+
+## Outreach flow
+
+The sales loop. Demand thesis: the pitch is the RESULT of automation — the
+demo arrives already built, so the prospect's effort to see value is zero.
+
+### First contact: A/B pitch experiment
+
+Two first-contact templates exist in `outreach/templates.js`:
+
+- **Variant A — `first-contact` (teardown):** "he preparado un rediseño,
+  mira el antes y después". The control.
+- **Variant B — `first-contact-demo` (demo-first):** "la web ya está hecha,
+  mírala" + the credibility hook ("cuando te recomiendan y te googlean, lo que
+  encuentran decide si te llaman"). Adapts copy for prospects with no website.
+
+Assignment rules (`outreach/variants.js`, shared by CLI and cockpit):
+1. **Sticky:** a prospect that already received a variant keeps it forever.
+2. **Explicit:** `--variant a|b` (CLI) or the A/B chips (cockpit) force one.
+3. **Auto-balance:** otherwise the variant with fewer sends wins (tie → A).
+
+Every send records `variant` in the pipeline entry's `outreach[]` log. Compare
+replies and demo visits per variant before declaring a winning pitch — with
+batches of 20-30 the result is directional, not significant.
+
+### Suppression list ("BAJA" is forever)
+
+`outreach/suppression.json` holds every address that asked to stop.
+`send.js` and the cockpit check it BEFORE every send — first contact and
+follow-ups alike, no force override. A reply containing "BAJA" must be added
+immediately: `node outreach/suppression.js add <email>`. The list survives
+`tools/reset-data.js` on purpose (legal record).
+
+### Follow-ups (>50% of replies live here)
+
+A prospect is due a follow-up when: fase is `contactado` AND last touch ≥4
+days ago AND fewer than 3 total touches AND not suppressed. A reply moves the
+entry forward in the pipeline (or to `descartado`), which drops it off the
+due list automatically. Sending any email auto-advances `prospecto` →
+`contactado` — no manual phase bump needed.
+
+### Cockpit operator loop (http://localhost:3458)
+
+The pipeline view's top bar is the morning checklist:
+- **Seguimientos pendientes** — prospects due a follow-up touch, one click
+  opens the composer with the follow-up template.
+- **Cola 1er contacto** — prospects ready for their first touch (fase
+  `prospecto` + email + live demo + not suppressed).
+- **Bajas (N)** — suppression list management.
+
+The composer previews server-side (subject, both bodies, warnings, resolved
+variant) and only sends with the explicit confirm checkbox. The previewed
+variant is pinned on send — what the operator read is what goes out.
 
 ---
 

@@ -3,13 +3,17 @@
   "version": "1.0.0",
   "description": "AI-powered toolkit for finding and redesigning local business websites",
   "scripts": {
-    "scrape": "node scraper.js",
-    "prospect:search": "node prospect-search.js",
-    "prospect:details": "node prospect-details.js",
-    "prospect:fetch": "node prospect-fetch.js",
-    "prospect:analyze": "bash prospect-analyze.sh",
-    "prospect:ui": "node serve-prospects.js",
-    "pipeline": "node serve-pipeline.js"
+    "cockpit": "node cockpit/server.js",
+    "scrape": "node scraper/scrape-site.js",
+    "prospect:search": "node prospect/search.js",
+    "prospect:details": "node prospect/details.js",
+    "prospect:fetch": "node prospect/fetch.js",
+    "prospect:analyze": "bash prospect/analyze.sh",
+    "prospect:enrich": "node prospect/enrich-emails.js",
+    "deploy": "node deploy/publish.js",
+    "outreach": "node outreach/send.js",
+    "prospect:ui": "node prospect/serve.js",
+    "pipeline": "node generate/serve-pipeline.js"
   },
   "dependencies": {
     "cheerio": "^1.0.0",
