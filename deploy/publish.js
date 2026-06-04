@@ -30,7 +30,7 @@ const firebaseHost = require('./firebase-host');
 
 // ── Build: validate sources and produce the rewritten page set ─────────────
 
-function buildPages(projectId) {
+function buildPages(projectId, publicPath) {
   const root = process.cwd();
   const projectDir = path.join(root, 'projects', projectId);
   const showcasePath = path.join(projectDir, 'showcase.html');
@@ -45,14 +45,14 @@ function buildPages(projectId) {
   }
 
   const neededAssets = new Set();
-  const showcase = rewriteShowcase(fs.readFileSync(showcasePath, 'utf-8'));
+  const showcase = rewriteShowcase(fs.readFileSync(showcasePath, 'utf-8'), publicPath);
   showcase.originalAssets.forEach((a) => neededAssets.add(a));
 
   const demoPages = {};
   const redesignEntries = fs.readdirSync(redesignDir, { withFileTypes: true });
   for (const entry of redesignEntries) {
     if (!entry.isFile() || !entry.name.endsWith('.html')) continue;
-    const page = rewriteRedesignPage(fs.readFileSync(path.join(redesignDir, entry.name), 'utf-8'));
+    const page = rewriteRedesignPage(fs.readFileSync(path.join(redesignDir, entry.name), 'utf-8'), publicPath);
     page.originalAssets.forEach((a) => neededAssets.add(a));
     demoPages[entry.name] = page.html;
   }
@@ -168,7 +168,14 @@ async function publish(projectId, { push = true, log = console.log } = {}) {
     throw new Error(`Unknown deploy.mode "${mode}" in config.operator.json (expected "git" or "firebase")`);
   }
 
-  const built = buildPages(projectId);
+  // Rewritten references are absolute, so the build must know where the
+  // slug will be mounted on its host.
+  const fbSub = mode === 'firebase' ? (config.deploy.firebase.demosPath || '').replace(/^\/+|\/+$/g, '') : '';
+  const publicPath = mode === 'firebase'
+    ? `${fbSub ? `/${fbSub}` : ''}/${projectId}`
+    : `/webs/${projectId}`;
+
+  const built = buildPages(projectId, publicPath);
   const result = mode === 'firebase'
     ? deliverFirebase(projectId, built, { push, log })
     : deliverGit(projectId, built, { push, log });
