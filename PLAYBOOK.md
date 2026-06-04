@@ -174,6 +174,11 @@ The redesign must look hand-crafted for this business, not AI-generated. Hard ru
 - **The business's own colors**, deepened — never invent a palette, never default to purple gradients or generic blue.
 - **No filler copy**: every sentence must come from the original content, reviews, or verifiable facts. No "soluciones integrales", no generic mission statements.
 - **Hierarchy you can squint at**: one clear primary action per page (call, book, visit). If everything is bold, nothing is.
+- **Animations must degrade**: reveal-on-scroll and friends need ALL THREE
+  fallbacks — `.js`-gated styles (no JS → fully visible), a reveal-all
+  timeout failsafe (~2.5s), and a `prefers-reduced-motion` media query
+  (visible without animation). A demo that renders blank for any visitor
+  is worse than no animation at all.
 - **Specific beats generic**: real opening hours over "always available", real street name in the hero over "your trusted partner".
 
 Before showing the user, ask: would another AI given the same config produce this exact page? If yes, it's not done.
