@@ -101,6 +101,16 @@ prospects/
   prospects.json             ← search results (generated)
 
 templates/                   ← legal page templates (Spanish law)
+
+.claude/skills/business-web-design/
+  SKILL.md                   ← the design skill: anti-AI-tell rules, design-lock
+  references/                ← banned tells, directions, compliance, booking
+  scripts/verify_design.py   ← runnable quality gate (tells + WCAG + RGPD checks)
+
+outreach/                    ← compose/send, A/B variants, suppression (LSSI)
+deploy/                      ← publish demos to the unified host
+cockpit/                     ← local operator UI
+tools/backup.js              ← dated backup of the JSON records (npm run backup)
 ```
 
 ## Adapting to your country

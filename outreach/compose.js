@@ -10,8 +10,7 @@ const { TEMPLATES } = require('./templates');
 // Recipient priority: manual override → curated project config → pipeline
 // entry → enriched prospect. Shared with followups.js so the due list and
 // the actual send always agree on who gets the email.
-function resolveRecipient(projectId, toOverride = null) {
-  const root = process.cwd();
+function resolveRecipient(projectId, toOverride = null, root = process.cwd()) {
   const projectConfig = loadJSON(path.join(root, 'projects', projectId, 'config.json'), {});
   const pipeline = loadJSON(path.join(root, 'projects', 'pipeline.json'), []);
   const entry = pipeline.find((p) => p.id === projectId) || {};

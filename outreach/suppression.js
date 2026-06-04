@@ -14,7 +14,10 @@
 const path = require('path');
 const { loadJSON, updateJSON } = require('../lib/json-store');
 
-const FILE = path.join(__dirname, 'suppression.json');
+// Overridable for tests only — the real legal record must never be touched
+// by a test run.
+const FILE = process.env.QUARTIER_SUPPRESSION_FILE
+  || path.join(__dirname, 'suppression.json');
 
 function normalize(email) {
   return String(email || '').trim().toLowerCase();

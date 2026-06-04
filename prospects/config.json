@@ -8,6 +8,7 @@
     "hotel", "hostal", "casa rural",
     "óptica", "floristería", "joyería", "ferretería",
     "papelería", "librería", "panadería", "pastelería",
-    "tienda de ropa", "estudio de tatuaje"
+    "tienda de ropa", "estudio de tatuaje",
+    "estética", "centro de belleza", "salón de belleza"
   ]
 }

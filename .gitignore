@@ -12,6 +12,9 @@ config.operator.json
 # Skill eval workspace (generated test sites + benchmark debris)
 .claude/skills/business-web-design-workspace/
 
+# Dated data backups (tools/backup.js — contains real business data)
+backups/
+
 # Prospect data (contains real business info)
 prospects/prospects.json
 prospects/searches.json
@@ -25,11 +28,12 @@ outreach/suppression.json
 # Demos site workspace (deploy.mode "firebase" — contains client demos)
 deploy/site/
 
-# Project data (contains client info)
-projects/
+# Project data (contains client info) — root-anchored so test fixtures with a
+# projects/ subtree stay tracked
+/projects/
 
 # Internal plans and notes
-planes/
+/planes/
 
 # Generated files
 pipeline.html

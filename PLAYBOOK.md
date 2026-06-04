@@ -166,6 +166,12 @@ Save in `projects/<name>/redesign/assets/`.
 
 ### Design quality bar (applies to EVERY generated page)
 
+The full implementation of this bar is the `/business-web-design` skill
+(`.claude/skills/business-web-design/`): follow its workflow (design-lock before code,
+banned-tells list, booking pattern for appointment trades) and run its
+`scripts/verify_design.py` until 0 FAILs before showing any page. The rules below are
+the summary; the skill is the source of truth.
+
 The redesign must look hand-crafted for this business, not AI-generated. Hard rules:
 
 - **No emojis as icons.** Use inline SVG icons or none. Emoji service grids scream "AI template".
