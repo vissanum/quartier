@@ -268,19 +268,32 @@ redesign/ → demo/, paths rewritten, integrity-scanned, `noindex` enforced,
 tracking injected, public URL recorded in `pipeline.json`). Delivery depends
 on `deploy.mode` in `config.operator.json`:
 
-- **`"firebase"` — dedicated demos site (recommended).** Copies into a local
-  workspace (`deploy/site/`, gitignored — it holds every published demo) and
-  releases the whole site with `firebase deploy`. Live in seconds, no git
-  round-trip, no CI. Demo URL: `<deploy.firebase.baseUrl>/<slug>`.
-  One-time setup:
+- **`"firebase"` — dedicated Hosting site (recommended).** Copies into a
+  local workspace (`deploy/site/`, gitignored — it holds the whole site) and
+  releases it with `firebase deploy`. Live in seconds, no git round-trip,
+  no CI. One-time setup:
   1. `firebase hosting:sites:create <site-id> --project <gcp-project>`
   2. Point a subdomain at it (CNAME → `<site-id>.web.app`; register the
      custom domain in Firebase Hosting so it mints the SSL cert).
   3. Fill `deploy.firebase` (`project`, `site`, `baseUrl`) and set
      `deploy.mode` to `"firebase"`.
-  The site root never lists demos (client privacy): `index.html` hands off
-  to the service landing and a crafted `404.html` covers stale links. Both
-  generate on first deploy and are kept if you customize them.
+  Two layouts:
+  - **Demos-only** (defaults): demos at the site root,
+    `<baseUrl>/<slug>`. The root `index.html` hands off to the service
+    landing (never lists demos — client privacy) and a crafted `404.html`
+    covers stale links; both generate on first deploy and are kept if you
+    customize them.
+  - **Unified service + demos**: set `firebase.serviceDir` (a folder in the
+    deploy repo, e.g. `"public-webs"`) and `firebase.demosPath` (e.g.
+    `"demos"`). Every publish syncs the service pages from the deploy
+    repo's LAST COMMIT (never the working tree — half-edited pages can't
+    leak) to the site root and writes demos under `/<demosPath>/<slug>`.
+    Demo URL: `<baseUrl>/<demosPath>/<slug>`. Demos get an `X-Robots-Tag:
+    noindex` header; service pages stay indexable. To publish a service
+    change without touching demos: commit it in the deploy repo, then
+    re-publish any project.
+  Set top-level `serviceUrl` so toolkit chrome (404, hand-off page) links
+  to your service page (defaults to `<webBaseUrl>/webs`).
 
 - **`"git"` (default)** — copies into `<deploy.repoPath>/public/webs/<name>/`,
   commits and pushes; the website repo's CI deploys it (needs git + SSH keys).

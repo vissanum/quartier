@@ -11,7 +11,10 @@
 // of other businesses' demos. Both pages are noindex and self-contained.
 
 // Where a stray visitor should end up: the operator's public service page.
+// serviceUrl wins (e.g. a dedicated host whose root IS the landing); the
+// classic <webBaseUrl>/webs layout is the fallback.
 function landingUrl(config) {
+  if (config.serviceUrl) return config.serviceUrl;
   const base = (config.deploy && config.deploy.webBaseUrl) || config.website || '';
   return base ? `${base}/webs` : '/';
 }

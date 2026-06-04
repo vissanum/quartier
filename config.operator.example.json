@@ -12,7 +12,9 @@
     "firebase": {
       "project": "your-gcp-project",
       "site": "your-demos-site-id",
-      "baseUrl": "https://demos.yourwebsite.com"
+      "baseUrl": "https://demos.yourwebsite.com",
+      "demosPath": "",
+      "serviceDir": ""
     }
   },
   "resend": {

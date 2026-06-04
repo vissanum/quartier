@@ -155,7 +155,7 @@ function deliverFirebase(projectId, built, { push, log }) {
     firebaseHost.deploySite(config, { log });
     deployed = true;
   }
-  const publicUrl = `${firebaseHost.siteBaseUrl(config)}/${slug}`;
+  const publicUrl = firebaseHost.demoUrl(config, slug);
   const liveNote = deployed ? ' (live now)' : ' (built, NOT deployed — run without --no-push)';
   return { publicUrl, liveNote, committed: deployed, pushed: deployed };
 }
