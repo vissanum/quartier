@@ -9,9 +9,13 @@ config.operator.json
 # Claude Code local settings (may contain API keys)
 .claude/settings.local.json
 
+# Skill eval workspace (generated test sites + benchmark debris)
+.claude/skills/business-web-design-workspace/
+
 # Prospect data (contains real business info)
 prospects/prospects.json
 prospects/searches.json
+prospects/*.bak-*
 prospects/fetched/
 prospects/analysis/
 
@@ -32,6 +36,9 @@ pipeline.html
 
 # Docker artifacts
 docker/analyzer/node_modules/
+
+# Python bytecode (skill scripts)
+__pycache__/
 
 # OS files
 Thumbs.db

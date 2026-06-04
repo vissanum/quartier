@@ -1,0 +1,27 @@
+{
+  "skill_name": "business-web-design",
+  "baseline": "frontend-design (official plugin) — the incumbent this skill must visibly beat",
+  "evals": [
+    {
+      "id": 0,
+      "name": "fisio-clinical",
+      "prompt": "Crea la demo (una sola página, index.html standalone con CSS inline) para Fisioterapia Meridiano, clínica de fisioterapia deportiva y suelo pélvico en Burgos, calle Vitoria 142. Colores de marca del logo: verde salvia y crema. Objetivo: que llamen al 947 200 300 o reserven por WhatsApp. Tienen 4,9 en Google con 87 reseñas (cita alguna como prueba real, p. ej. \"Laura me recuperó del esguince en tres semanas\", de Marta R.). Equipo: Laura (directora, 15 años de experiencia) y Jon (deportiva). Horario L-V 9:00-20:00. La web debe ser dinámica (animaciones al hacer scroll) y parecer hecha por un estudio de diseño, no por una IA.",
+      "expected_output": "index.html single-file, sage/cream palette from brand, characterful non-default typography, NO icon card grid, real facts in copy, scroll animations with full degradation, design-lock comment",
+      "files": []
+    },
+    {
+      "id": 1,
+      "name": "cafe-warm",
+      "prompt": "Haz una web de una página (index.html standalone, CSS inline) para Café Botica, cafetería de especialidad y brunch en el Casco Viejo de Bilbao, Artekale 12. Abren de 8:30 a 15:00, cierran los lunes. Colores de marca: granate y crema. Carta corta: tostas, bowls, café de especialidad de tueste local, tarta de queso casera. Objetivo: que la gente venga el fin de semana. No hay fotos propias todavía. Quiero que la página tenga vida (movimiento, microinteracciones) y que no parezca una plantilla de IA.",
+      "expected_output": "index.html single-file, burgundy/cream brand palette, editorial typography, typographic menu treatment (no photo-less fake imagery, no icon grid), motion with degradation, design-lock comment",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "taller-industrial",
+      "prompt": "Crea la home (index.html standalone, CSS inline) para Talleres Mendia, taller mecánico familiar en Basauri desde 1989. Especialistas en frenos, pre-ITV y diagnosis electrónica. Teléfono 944 261 500, calle Kareaga 23. Objetivo: que llamen. Tono serio, honesto, de barrio: nada de estética startup ni gradientes. Que tenga algo de movimiento al hacer scroll pero sobrio. Tiene que parecer diseñada a medida, no generada.",
+      "expected_output": "index.html single-file, industrial direction (steel neutrals + safety accent), condensed display type, services as spec-table/typographic treatment (no icon cards), sober motion with degradation, design-lock comment",
+      "files": []
+    }
+  ]
+}

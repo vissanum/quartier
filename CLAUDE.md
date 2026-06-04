@@ -14,7 +14,7 @@ Run `npm test` (Vitest, tests in `test/*.test.js`). Details in `TESTING.md`.
 
 ## Claude-specific
 
-When generating HTML pages (home, subpages, showcase), use the `/frontend-design` skill for high-quality, production-grade output.
+When generating HTML pages (home, subpages, showcase), use the `/business-web-design` skill (in `.claude/skills/`). It enforces the PLAYBOOK design quality bar mechanically: design-lock header, banned AI tells, motion degradation, and `scripts/verify_design.py` must report 0 FAILs before showing output. (`/frontend-design` remains available but is superseded for business sites — benchmarked at 62% vs 100% on the quality assertions, see `.claude/skills/business-web-design-workspace/iteration-1/benchmark.md`.)
 
 ## Skill routing
 
