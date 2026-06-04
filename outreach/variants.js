@@ -13,8 +13,8 @@ const TEMPLATE_TO_VARIANT = Object.fromEntries(
   Object.entries(FIRST_CONTACT_VARIANTS).map(([v, t]) => [t, v])
 );
 
-function resolveVariant(projectId, explicit) {
-  const pipeline = loadJSON(path.join(process.cwd(), 'projects', 'pipeline.json'), []);
+function resolveVariant(projectId, explicit, root = process.cwd()) {
+  const pipeline = loadJSON(path.join(root, 'projects', 'pipeline.json'), []);
   const entry = pipeline.find((p) => p.id === projectId);
   const prior = ((entry && entry.outreach) || [])
     .map((o) => o.variant || TEMPLATE_TO_VARIANT[o.template])

@@ -30,8 +30,7 @@ const firebaseHost = require('./firebase-host');
 
 // ── Build: validate sources and produce the rewritten page set ─────────────
 
-function buildPages(projectId, publicPath) {
-  const root = process.cwd();
+function buildPages(projectId, publicPath, root = process.cwd()) {
   const projectDir = path.join(root, 'projects', projectId);
   const showcasePath = path.join(projectDir, 'showcase.html');
   const redesignDir = path.join(projectDir, 'redesign');
@@ -210,4 +209,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { publish };
+module.exports = { publish, buildPages };
