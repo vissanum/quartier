@@ -15,6 +15,9 @@ prospects/searches.json
 prospects/fetched/
 prospects/analysis/
 
+# Outreach data (emails of people who opted out — legal record, never public)
+outreach/suppression.json
+
 # Project data (contains client info)
 projects/
 
@@ -31,3 +34,4 @@ docker/analyzer/node_modules/
 Thumbs.db
 *.swp
 *.swo
+.gstack/

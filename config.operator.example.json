@@ -2,5 +2,20 @@
   "name": "Your Name",
   "email": "your@email.com",
   "website": "https://yourwebsite.com",
-  "showcaseBaseUrl": "https://yourwebsite.com/pages"
+  "showcaseBaseUrl": "https://yourwebsite.com",
+  "deploy": {
+    "repoPath": "../your-website-repo",
+    "branch": "main",
+    "webBaseUrl": "https://yourwebsite.com",
+    "reservedSlugs": ["my-landing-page", "my-privacy-page"]
+  },
+  "resend": {
+    "from": "Your Name <hello@yourwebsite.com>",
+    "replyTo": "your@email.com"
+  },
+  "tracking": {
+    "provider": "goatcounter",
+    "goatcounter": { "code": "your-goatcounter-code" }
+  },
+  "coAuthor": "Claude <noreply@anthropic.com>"
 }
