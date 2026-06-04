@@ -55,7 +55,10 @@ function baseStyles() {
 }
 
 function fontLinks() {
-  return `<link rel="preconnect" href="https://fonts.googleapis.com">
+  // /favicon.svg resolves when the site (or the synced service pages)
+  // ships one at the root; a missing favicon degrades silently.
+  return `<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">`;
 }
