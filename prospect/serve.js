@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// DEPRECATED: superseded by the unified cockpit (npm run cockpit → http://localhost:3458).
+// Kept one release as a fallback.
 
 // UI web local para visualizar prospectos acumulados.
 // Solo lectura y consulta — la interacción real es por chat con Claude.

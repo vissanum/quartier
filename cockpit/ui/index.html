@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Quartier — Cockpit</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <span class="wordmark">Quartier<span class="tip">▴</span></span>
+    <nav class="tabs">
+      <button class="tab" data-view="pipeline">Pipeline</button>
+      <button class="tab" data-view="prospectos">Prospectos</button>
+      <button class="tab" data-view="proyecto" id="tab-proyecto" hidden>Proyecto</button>
+    </nav>
+    <div class="street-summary" id="street-summary"></div>
+  </header>
+
+  <main>
+    <section class="view" id="view-pipeline">
+      <div class="followups-bar" id="followups-bar"></div>
+      <div class="board" id="board"></div>
+    </section>
+
+    <section class="view" id="view-prospectos">
+      <div class="toolbar" id="prospect-toolbar">
+        <input class="input" id="p-search" placeholder="Buscar nombre o zona…" style="width:220px">
+        <button class="chip" data-filter="con-web">con web</button>
+        <button class="chip" data-filter="sin-web">sin web</button>
+        <button class="chip" data-filter="con-email">con email</button>
+        <span class="spacer"></span>
+        <button class="btn sm" id="btn-enrich-all">Buscar emails pendientes</button>
+        <span class="muted" id="p-count"></span>
+      </div>
+      <div class="ledger" id="ledger"></div>
+    </section>
+
+    <section class="view" id="view-proyecto">
+      <div id="proyecto-body"></div>
+    </section>
+  </main>
+
+  <!-- Workbench console -->
+  <div class="console" id="console">
+    <div class="console-head">
+      <span class="pilot" id="console-pilot"></span>
+      <span class="title" id="console-title">—</span>
+      <button class="btn sm close" id="console-kill" hidden>Detener</button>
+      <button class="btn sm close" id="console-close">Cerrar</button>
+    </div>
+    <div class="console-body" id="console-body"></div>
+  </div>
+
+  <!-- Outreach composer -->
+  <div class="overlay" id="outreach-overlay">
+    <div class="modal">
+      <h2>Correo de captación</h2>
+      <div id="outreach-warnings"></div>
+      <div class="field">
+        <label>Plantilla</label>
+        <select class="select" id="o-template">
+          <option value="first-contact">Primer contacto</option>
+          <option value="follow-up">Seguimiento</option>
+        </select>
+      </div>
+      <div class="field" id="o-variant-field">
+        <label>Pitch (experimento A/B)</label>
+        <div class="variant-row">
+          <button class="chip on" data-variant="">auto</button>
+          <button class="chip" data-variant="a">A · teardown</button>
+          <button class="chip" data-variant="b">B · demo-first</button>
+          <span class="muted" id="o-variant-info"></span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Para</label>
+        <input class="input" id="o-to">
+      </div>
+      <div class="field">
+        <label>Asunto</label>
+        <input class="input" id="o-subject">
+      </div>
+      <div class="field">
+        <label>Mensaje (texto)</label>
+        <textarea class="input" id="o-text" rows="9"></textarea>
+      </div>
+      <div class="field">
+        <label>Vista previa HTML</label>
+        <iframe class="preview-frame" id="o-preview" sandbox=""></iframe>
+      </div>
+      <div class="foot">
+        <span class="muted" style="font-size:12px">al enviar, la fase avanza sola a «contactado»</span>
+        <span class="spacer"></span>
+        <label class="check"><input type="checkbox" id="o-confirm"> confirmo el envío</label>
+        <button class="btn" id="o-cancel">Cancelar</button>
+        <button class="btn primary" id="o-send" disabled>Enviar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Suppression list (BAJA) -->
+  <div class="overlay" id="suppression-overlay">
+    <div class="modal">
+      <h2>Lista de bajas</h2>
+      <p class="muted" style="margin:0 0 16px;font-size:13px">Quien responde «BAJA» entra aquí y no vuelve a recibir correo — ni primer contacto, ni seguimiento, ni con force.</p>
+      <div class="field">
+        <label>Añadir baja</label>
+        <div class="variant-row">
+          <input class="input" id="s-email" placeholder="email@ejemplo.com" style="flex:1">
+          <button class="btn sm" id="s-add">Añadir</button>
+        </div>
+      </div>
+      <div id="suppression-list"></div>
+      <div class="foot">
+        <span class="spacer"></span>
+        <button class="btn" id="s-close">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toasts" id="toasts"></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/jobs.js"></script>
+  <script src="/js/pipeline.js"></script>
+  <script src="/js/prospects.js"></script>
+  <script src="/js/outreach.js"></script>
+  <script src="/js/project.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+/* Quartier Cockpit — design tokens.
+   The world: a workshop at dusk in the neighborhood. Slate evening sky,
+   amber streetlight, chalk on slate, the green neon of an "open" sign. */
+
+:root {
+  /* Surfaces — dusk, elevation in whisper steps */
+  --dusk: #0d1321;          /* page — city sky after sundown */
+  --dusk-panel: #111827;    /* header, toolbars */
+  --dusk-card: #151e2d;     /* cards — storefront */
+  --dusk-raised: #1b2638;   /* dropdowns, modals — one step above */
+  --dusk-inset: #0a0f19;    /* inputs, console — inset, receives content */
+
+  /* Text — chalk on slate, four levels */
+  --chalk: #e9eef5;
+  --chalk-2: #aab6c6;
+  --chalk-3: #7b899f;
+  --chalk-4: #4c586d;
+
+  /* Borders — findable, never loud */
+  --line-soft: rgba(148, 163, 184, 0.07);
+  --line: rgba(148, 163, 184, 0.13);
+  --line-strong: rgba(148, 163, 184, 0.25);
+  --ring: rgba(245, 166, 35, 0.55);
+
+  /* Light — one amber accent, used with intention */
+  --streetlight: #f5a623;
+  --streetlight-dim: rgba(245, 166, 35, 0.13);
+  --abierto: #34d399;            /* the "open" neon — live, success */
+  --abierto-dim: rgba(52, 211, 153, 0.12);
+  --brick: #e2604c;              /* brick — errors, closed */
+  --brick-dim: rgba(226, 96, 76, 0.12);
+
+  /* Awnings — one per pipeline phase */
+  --awn-prospecto: #64748b;
+  --awn-contactado: #38bdf8;
+  --awn-propuesta: #f5a623;
+  --awn-negociando: #a78bfa;
+  --awn-aceptado: #34d399;
+  --awn-entregado: #2dd4bf;
+  --awn-cobrado: #facc15;
+  --awn-descartado: #8a5a50;
+
+  /* Type — workbench pragmatism */
+  --font-ui: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+
+  /* Space — base 4 */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 20px; --s6: 24px; --s8: 32px;
+
+  --r-sm: 6px; --r-md: 10px; --r-lg: 14px;
+}

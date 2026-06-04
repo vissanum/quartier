@@ -18,6 +18,11 @@ fi
 TTY_FLAG=""
 [ -t 0 ] && TTY_FLAG="-it"
 
+# Headless jobs (spawned by the cockpit) set QUARTIER_NO_PORTS=1 so concurrent
+# containers don't fight over the legacy UI ports.
+PORT_FLAGS="-p 3456:3456 -p 3457:3457"
+[ -n "$QUARTIER_NO_PORTS" ] && PORT_FLAGS=""
+
 docker run --rm $TTY_FLAG \
     --init \
     --cap-add=SYS_ADMIN \
@@ -25,8 +30,7 @@ docker run --rm $TTY_FLAG \
     -v /dev/shm:/dev/shm \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -e HOST_WORKSPACE="$SCRIPT_DIR" \
-    -p 3456:3456 \
-    -p 3457:3457 \
+    $PORT_FLAGS \
     -w /app \
     "$IMAGE_NAME" \
     "$@"

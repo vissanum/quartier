@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// DEPRECATED: superseded by the unified cockpit (npm run cockpit → http://localhost:3458).
+// Kept one release as a fallback.
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
