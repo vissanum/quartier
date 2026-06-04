@@ -7,7 +7,7 @@
 import { describe, it, expect } from 'vitest';
 import { rewriteShowcase, rewriteRedesignPage, scanIntegrity } from '../deploy/rewrite-paths';
 
-const PUB = '/demos/talleres-garin';
+const PUB = '/demos/cafe-imaginario';
 
 describe('rewriteShowcase', () => {
   it('absolutizes original/ and redesign/ refs under the public path', () => {
