@@ -18,6 +18,9 @@ prospects/analysis/
 # Outreach data (emails of people who opted out — legal record, never public)
 outreach/suppression.json
 
+# Demos site workspace (deploy.mode "firebase" — contains client demos)
+deploy/site/
+
 # Project data (contains client info)
 projects/
 

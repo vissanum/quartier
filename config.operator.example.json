@@ -4,10 +4,16 @@
   "website": "https://yourwebsite.com",
   "showcaseBaseUrl": "https://yourwebsite.com",
   "deploy": {
+    "mode": "git",
     "repoPath": "../your-website-repo",
     "branch": "main",
     "webBaseUrl": "https://yourwebsite.com",
-    "reservedSlugs": ["my-landing-page", "my-privacy-page"]
+    "reservedSlugs": ["my-landing-page", "my-privacy-page"],
+    "firebase": {
+      "project": "your-gcp-project",
+      "site": "your-demos-site-id",
+      "baseUrl": "https://demos.yourwebsite.com"
+    }
   },
   "resend": {
     "from": "Your Name <hello@yourwebsite.com>",

@@ -1,12 +1,23 @@
 #!/usr/bin/env node
-// Publish a project's demo to the public website repo.
+// Publish a project's demo. Two delivery modes, chosen by deploy.mode in
+// config.operator.json:
 //
-// Copies showcase.html (→ index.html) and redesign/ (→ demo/) into
-// <deploy.repoPath>/public/webs/<slug>/, rewrites relative paths, commits the
-// slug directory and pushes so the website CI deploys it.
+//   "git" (default)  — copy into <deploy.repoPath>/public/webs/<slug>/,
+//                      commit + push; the website repo's CI deploys it.
+//                      Demo URL: <webBaseUrl>/webs/<slug>
+//   "firebase"       — copy into the local demos workspace and release the
+//                      dedicated Firebase Hosting site directly (seconds,
+//                      no git, no CI). Demo URL: <firebase.baseUrl>/<slug>
+//
+// Build is identical in both modes: showcase.html → index.html, redesign/ →
+// demo/, referenced original/ assets → assets/, paths rewritten, integrity-
+// scanned, noindex enforced, tracking injected.
 //
 // Usage:
 //   node deploy/publish.js <project-name> [--no-push]
+//
+// --no-push builds the target layout but skips delivery (git: no commit/push;
+// firebase: no deploy) so it can be inspected first.
 
 const fs = require('fs');
 const path = require('path');
@@ -15,23 +26,17 @@ const { loadJSON, updateJSON } = require('../lib/json-store');
 const { rewriteShowcase, rewriteRedesignPage, scanIntegrity, toAssetPath } = require('./rewrite-paths');
 const { trackingSnippet, injectTracking } = require('./tracking');
 const { assertRepoReady, commitAndPush } = require('./git-host');
+const firebaseHost = require('./firebase-host');
 
-async function publish(projectId, { push = true, log = console.log } = {}) {
+// ── Build: validate sources and produce the rewritten page set ─────────────
+
+function buildPages(projectId) {
   const root = process.cwd();
   const projectDir = path.join(root, 'projects', projectId);
   const showcasePath = path.join(projectDir, 'showcase.html');
   const redesignDir = path.join(projectDir, 'redesign');
   const originalDir = path.join(projectDir, 'original');
-  const pipelinePath = path.join(root, 'projects', 'pipeline.json');
 
-  // 1. Validate configuration and sources before touching anything
-  const { repoPath, branch, webBaseUrl } = config.deploy;
-  if (!repoPath || !webBaseUrl) {
-    throw new Error('config.operator.json is missing deploy.repoPath / deploy.webBaseUrl');
-  }
-  const repo = path.resolve(root, repoPath);
-  const publicDir = path.join(repo, 'public');
-  if (!fs.existsSync(publicDir)) throw new Error(`Deploy repo has no public/ directory: ${publicDir}`);
   if (!fs.existsSync(showcasePath)) {
     throw new Error(`Missing projects/${projectId}/showcase.html — generate the showcase first (PLAYBOOK step 9)`);
   }
@@ -39,9 +44,6 @@ async function publish(projectId, { push = true, log = console.log } = {}) {
     throw new Error(`Missing projects/${projectId}/redesign/index.html — generate the redesign first`);
   }
 
-  assertRepoReady(repo, branch);
-
-  // 2. Rewrite HTML and collect every original/ asset it references
   const neededAssets = new Set();
   const showcase = rewriteShowcase(fs.readFileSync(showcasePath, 'utf-8'));
   showcase.originalAssets.forEach((a) => neededAssets.add(a));
@@ -61,7 +63,7 @@ async function publish(projectId, { push = true, log = console.log } = {}) {
     }
   }
 
-  // 3. Integrity scan — a broken demo must never reach production
+  // Integrity scan — a broken demo must never reach production
   const htmlByFile = { 'index.html': showcase.html };
   for (const [name, html] of Object.entries(demoPages)) htmlByFile[`demo/${name}`] = html;
   const offenders = scanIntegrity(htmlByFile);
@@ -70,24 +72,20 @@ async function publish(projectId, { push = true, log = console.log } = {}) {
     throw new Error(`Deploy aborted — unresolved relative references:\n${list}`);
   }
 
-  // 4. Write the target layout (fresh — the slug dir is fully owned by deploys)
-  const slug = projectId;
-  // If the /webs section of your site also hosts your own pages (a landing,
-  // an intake form…), a project slug with the same name would shadow them.
-  // 'index' and 'assets' are always reserved; add your own page names via
-  // deploy.reservedSlugs in config.operator.json.
-  const reserved = ['index', 'assets', ...(config.deploy.reservedSlugs || [])];
-  if (reserved.includes(slug)) {
-    throw new Error(`"${slug}" is a reserved name in /webs (see deploy.reservedSlugs) — rename the project`);
-  }
-  const target = path.join(publicDir, 'webs', slug);
+  return { showcase, demoPages, neededAssets, redesignDir, originalDir, redesignEntries };
+}
+
+// ── Write: lay the built demo out under target/ (fresh, fully owned) ───────
+
+function writeSlugDir(target, slug, built, { log }) {
+  const { showcase, demoPages, neededAssets, redesignDir, originalDir, redesignEntries } = built;
   fs.rmSync(target, { recursive: true, force: true });
   fs.mkdirSync(path.join(target, 'demo'), { recursive: true });
 
   // Visit tracking goes into every published page (showcase + demo pages).
   // No tracking config → empty snippet → pages publish untouched.
   const snippet = trackingSnippet(config, slug);
-  if (snippet) log('[deploy] tracking snippet injected (' + (config.tracking.provider) + ')');
+  if (snippet) log(`[deploy] tracking snippet injected (${config.tracking.provider})`);
 
   fs.writeFileSync(path.join(target, 'index.html'), injectTracking(showcase.html, snippet));
   for (const [name, html] of Object.entries(demoPages)) {
@@ -103,37 +101,92 @@ async function publish(projectId, { push = true, log = console.log } = {}) {
     fs.mkdirSync(path.dirname(dest), { recursive: true });
     fs.copyFileSync(path.join(originalDir, rel), dest);
   }
-  log(`[deploy] wrote ${path.relative(repo, target)} (${Object.keys(demoPages).length} demo pages, ${neededAssets.size} shared assets)`);
+  log(`[deploy] wrote ${target} (${Object.keys(demoPages).length} demo pages, ${neededAssets.size} shared assets)`);
+}
 
-  // 5. Commit + push, scoped to the slug dir
-  const pipeline = loadJSON(pipelinePath, []);
+// ── Delivery modes ──────────────────────────────────────────────────────────
+
+function deliverGit(projectId, built, { push, log }) {
+  const root = process.cwd();
+  const { repoPath, branch, webBaseUrl } = config.deploy;
+  if (!repoPath || !webBaseUrl) {
+    throw new Error('config.operator.json is missing deploy.repoPath / deploy.webBaseUrl');
+  }
+  const repo = path.resolve(root, repoPath);
+  const publicDir = path.join(repo, 'public');
+  if (!fs.existsSync(publicDir)) throw new Error(`Deploy repo has no public/ directory: ${publicDir}`);
+
+  const slug = projectId;
+  // On the shared /webs section a project slug could shadow operator pages
+  // (landing, intake…). 'index' and 'assets' are always reserved; operator
+  // pages are listed in deploy.reservedSlugs.
+  const reserved = ['index', 'assets', ...(config.deploy.reservedSlugs || [])];
+  if (reserved.includes(slug)) {
+    throw new Error(`"${slug}" is a reserved name in /webs (see deploy.reservedSlugs) — rename the project`);
+  }
+
+  assertRepoReady(repo, branch);
+  writeSlugDir(path.join(publicDir, 'webs', slug), slug, built, { log });
+
+  const pipeline = loadJSON(path.join(root, 'projects', 'pipeline.json'), []);
   const entry = pipeline.find((p) => p.id === projectId);
-  const nombre = entry ? entry.nombre : projectId;
   const result = commitAndPush(repo, {
     pathspec: path.posix.join('public', 'webs', slug),
-    subject: `Deploy redesign demo: ${nombre} (${slug})`,
+    subject: `Deploy redesign demo: ${entry ? entry.nombre : slug} (${slug})`,
     coAuthor: config.coAuthor,
     branch,
     push,
     log,
   });
 
-  // 6. Record the public URL in the pipeline
   // No trailing slash: Firebase (cleanUrls + trailingSlash:false) 301s "/x/" → "/x"
   const publicUrl = `${webBaseUrl}/webs/${slug}`;
-  await updateJSON(pipelinePath, (entries) => {
+  const liveNote = result.pushed ? ' (live once CI finishes)' : ' (NOT pushed)';
+  return { publicUrl, liveNote, ...result };
+}
+
+function deliverFirebase(projectId, built, { push, log }) {
+  const slug = projectId;
+  firebaseHost.ensureWorkspace(config, { log });
+  writeSlugDir(firebaseHost.slugTarget(config, slug), slug, built, { log });
+
+  let deployed = false;
+  if (push) {
+    firebaseHost.deploySite(config, { log });
+    deployed = true;
+  }
+  const publicUrl = `${firebaseHost.siteBaseUrl(config)}/${slug}`;
+  const liveNote = deployed ? ' (live now)' : ' (built, NOT deployed — run without --no-push)';
+  return { publicUrl, liveNote, committed: deployed, pushed: deployed };
+}
+
+// ── Entry point ─────────────────────────────────────────────────────────────
+
+async function publish(projectId, { push = true, log = console.log } = {}) {
+  const mode = (config.deploy && config.deploy.mode) || 'git';
+  if (mode !== 'git' && mode !== 'firebase') {
+    throw new Error(`Unknown deploy.mode "${mode}" in config.operator.json (expected "git" or "firebase")`);
+  }
+
+  const built = buildPages(projectId);
+  const result = mode === 'firebase'
+    ? deliverFirebase(projectId, built, { push, log })
+    : deliverGit(projectId, built, { push, log });
+
+  // Record the public URL in the pipeline
+  await updateJSON(path.join(process.cwd(), 'projects', 'pipeline.json'), (entries) => {
     const item = (entries || []).find((p) => p.id === projectId);
     if (!item) {
       log(`[deploy] warning: no pipeline entry for "${projectId}" — publicUrl not recorded`);
       return entries || [];
     }
-    item.publicUrl = publicUrl;
-    item.showcaseUrl = publicUrl;
+    item.publicUrl = result.publicUrl;
+    item.showcaseUrl = result.publicUrl;
     item.ultimaAccion = new Date().toISOString().slice(0, 10);
   }, []);
 
-  log(`[deploy] public URL: ${publicUrl}${result.pushed ? ' (live once CI finishes)' : ' (NOT pushed)'}`);
-  return { publicUrl, ...result };
+  log(`[deploy] public URL: ${result.publicUrl}${result.liveNote}`);
+  return { publicUrl: result.publicUrl, committed: result.committed, pushed: result.pushed };
 }
 
 // CLI

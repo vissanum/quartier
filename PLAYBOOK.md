@@ -259,19 +259,39 @@ Tell the user the page is ready for review. **DO NOT deploy. Wait for user appro
 ### 12. Deploy (only when user asks)
 
 ```bash
-node deploy/publish.js <name>            # build, rewrite paths, commit, push
-node deploy/publish.js <name> --no-push  # inspect locally first
+node deploy/publish.js <name>            # build + deliver
+node deploy/publish.js <name> --no-push  # build only, inspect first
 ```
 
-Runs on the HOST (needs git + SSH keys). Publishes showcase + redesign to
-`<deploy.repoPath>/public/webs/<name>/` and records the public URL in
-`pipeline.json`. Demos keep `noindex`. The website repo's CI does the rest.
+Runs on the HOST. The build is always the same (showcase → index.html,
+redesign/ → demo/, paths rewritten, integrity-scanned, `noindex` enforced,
+tracking injected, public URL recorded in `pipeline.json`). Delivery depends
+on `deploy.mode` in `config.operator.json`:
+
+- **`"firebase"` — dedicated demos site (recommended).** Copies into a local
+  workspace (`deploy/site/`, gitignored — it holds every published demo) and
+  releases the whole site with `firebase deploy`. Live in seconds, no git
+  round-trip, no CI. Demo URL: `<deploy.firebase.baseUrl>/<slug>`.
+  One-time setup:
+  1. `firebase hosting:sites:create <site-id> --project <gcp-project>`
+  2. Point a subdomain at it (CNAME → `<site-id>.web.app`; register the
+     custom domain in Firebase Hosting so it mints the SSL cert).
+  3. Fill `deploy.firebase` (`project`, `site`, `baseUrl`) and set
+     `deploy.mode` to `"firebase"`.
+  The site root never lists demos (client privacy): `index.html` hands off
+  to the service landing and a crafted `404.html` covers stale links. Both
+  generate on first deploy and are kept if you customize them.
+
+- **`"git"` (default)** — copies into `<deploy.repoPath>/public/webs/<name>/`,
+  commits and pushes; the website repo's CI deploys it (needs git + SSH keys).
+  Demo URL: `<webBaseUrl>/webs/<slug>`. Use when you'd rather keep demos
+  versioned inside the website repo and don't mind the CI wait.
 
 Notes:
-- **Reserved slugs:** `index` and `assets` are always refused as project names.
-  If your `/webs` section also hosts your own pages (a landing, an intake form,
-  a privacy policy), list them in `deploy.reservedSlugs` in
-  `config.operator.json` so a project can never shadow them.
+- **Reserved slugs:** `index` and `assets` are always refused as project
+  names (`404` too on the demos site). In git mode, list your own /webs pages
+  (landing, intake form, privacy policy) in `deploy.reservedSlugs` so a
+  project can never shadow them.
 - **Visit tracking:** if `config.operator.json` has a `tracking` block
   (`{"provider":"goatcounter","goatcounter":{"code":"..."}}` or
   `{"provider":"beacon","endpoint":"https://..."}`), publish.js injects the
