@@ -23,10 +23,12 @@ function makeProject({ showcase = true, redesign = true, body = '<h1>Hola</h1>' 
 }
 
 describe('publish buildPages (refuse to build a broken demo)', () => {
-  it('aborts when showcase.html is missing (the batch-1 B1 blocker)', () => {
+  it('builds WITHOUT a showcase: showcase null, demo pages intact (optional since 2026-06-04)', () => {
     const root = makeProject({ showcase: false });
-    expect(() => buildPages('cafe-imaginario', '/demos/cafe-imaginario', root))
-      .toThrow(/showcase\.html/);
+    const built = buildPages('cafe-imaginario', '/demos/cafe-imaginario', root);
+    expect(built.showcase).toBeNull();
+    expect(built.publicPath).toBe('/demos/cafe-imaginario');
+    expect(built.demoPages['index.html']).toContain('<h1>Hola</h1>');
   });
 
   it('aborts when redesign/index.html is missing', () => {

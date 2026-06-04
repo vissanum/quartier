@@ -36,16 +36,19 @@ function buildPages(projectId, publicPath, root = process.cwd()) {
   const redesignDir = path.join(projectDir, 'redesign');
   const originalDir = path.join(projectDir, 'original');
 
-  if (!fs.existsSync(showcasePath)) {
-    throw new Error(`Missing projects/${projectId}/showcase.html — generate the showcase first (PLAYBOOK step 9)`);
-  }
   if (!fs.existsSync(path.join(redesignDir, 'index.html'))) {
     throw new Error(`Missing projects/${projectId}/redesign/index.html — generate the redesign first`);
   }
 
+  // Showcase (the before/after page) is OPTIONAL: with it, it becomes the
+  // slug's index and the demo lives under /demo/; without it, the slug root
+  // redirects straight to the demo. Demos stay noindex + link-only either way.
   const neededAssets = new Set();
-  const showcase = rewriteShowcase(fs.readFileSync(showcasePath, 'utf-8'), publicPath);
-  showcase.originalAssets.forEach((a) => neededAssets.add(a));
+  let showcase = null;
+  if (fs.existsSync(showcasePath)) {
+    showcase = rewriteShowcase(fs.readFileSync(showcasePath, 'utf-8'), publicPath);
+    showcase.originalAssets.forEach((a) => neededAssets.add(a));
+  }
 
   const demoPages = {};
   const redesignEntries = fs.readdirSync(redesignDir, { withFileTypes: true });
@@ -63,7 +66,8 @@ function buildPages(projectId, publicPath, root = process.cwd()) {
   }
 
   // Integrity scan — a broken demo must never reach production
-  const htmlByFile = { 'index.html': showcase.html };
+  const htmlByFile = {};
+  if (showcase) htmlByFile['index.html'] = showcase.html;
   for (const [name, html] of Object.entries(demoPages)) htmlByFile[`demo/${name}`] = html;
   const offenders = scanIntegrity(htmlByFile);
   if (offenders.length) {
@@ -71,7 +75,7 @@ function buildPages(projectId, publicPath, root = process.cwd()) {
     throw new Error(`Deploy aborted — unresolved relative references:\n${list}`);
   }
 
-  return { showcase, demoPages, neededAssets, redesignDir, originalDir, redesignEntries };
+  return { showcase, demoPages, neededAssets, redesignDir, originalDir, redesignEntries, publicPath };
 }
 
 // ── Write: lay the built demo out under target/ (fresh, fully owned) ───────
@@ -86,7 +90,20 @@ function writeSlugDir(target, slug, built, { log }) {
   const snippet = trackingSnippet(config, slug);
   if (snippet) log(`[deploy] tracking snippet injected (${config.tracking.provider})`);
 
-  fs.writeFileSync(path.join(target, 'index.html'), injectTracking(showcase.html, snippet));
+  if (showcase) {
+    fs.writeFileSync(path.join(target, 'index.html'), injectTracking(showcase.html, snippet));
+  } else {
+    // No before/after page: the slug root bounces straight to the demo.
+    // Absolute URL on purpose — cleanUrls serves /x/index.html at /x (no
+    // trailing slash), so a relative "demo/" would resolve a directory up.
+    const demoUrl = `${built.publicPath}/demo/`;
+    fs.writeFileSync(path.join(target, 'index.html'), `<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="refresh" content="0; url=${demoUrl}">
+<title>Demo</title></head>
+<body><p><a href="${demoUrl}">Ver la demo</a></p></body></html>\n`);
+  }
   for (const [name, html] of Object.entries(demoPages)) {
     fs.writeFileSync(path.join(target, 'demo', name), injectTracking(html, snippet));
   }
@@ -179,20 +196,23 @@ async function publish(projectId, { push = true, log = console.log } = {}) {
     ? deliverFirebase(projectId, built, { push, log })
     : deliverGit(projectId, built, { push, log });
 
-  // Record the public URL in the pipeline
+  // Record the public URL in the pipeline. Without a showcase the link that
+  // goes to the prospect is the demo itself; showcaseUrl stays empty so the
+  // teardown pitch (variant a) knows it has no before/after page to cite.
+  const publicUrl = built.showcase ? result.publicUrl : `${result.publicUrl}/demo`;
   await updateJSON(path.join(process.cwd(), 'projects', 'pipeline.json'), (entries) => {
     const item = (entries || []).find((p) => p.id === projectId);
     if (!item) {
       log(`[deploy] warning: no pipeline entry for "${projectId}" — publicUrl not recorded`);
       return entries || [];
     }
-    item.publicUrl = result.publicUrl;
-    item.showcaseUrl = result.publicUrl;
+    item.publicUrl = publicUrl;
+    item.showcaseUrl = built.showcase ? result.publicUrl : '';
     item.ultimaAccion = new Date().toISOString().slice(0, 10);
   }, []);
 
-  log(`[deploy] public URL: ${result.publicUrl}${result.liveNote}`);
-  return { publicUrl: result.publicUrl, committed: result.committed, pushed: result.pushed };
+  log(`[deploy] public URL: ${publicUrl}${result.liveNote}`);
+  return { publicUrl, committed: result.committed, pushed: result.pushed };
 }
 
 // CLI
