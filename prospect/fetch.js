@@ -13,6 +13,7 @@ const fs = require('fs');
 const path = require('path');
 const http = require('http');
 const https = require('https');
+const { extractEmails } = require('../lib/emails');
 
 const FETCHED_DIR = path.join(process.cwd(), 'prospects', 'fetched');
 
@@ -132,6 +133,9 @@ function analyzeHtml(html, url, responseData) {
             totalLinks: (html.match(/<a\s/gi) || []).length,
             externalLinks: (html.match(/href="https?:\/\/(?!.*(?:localhost))/gi) || []).length,
             socialLinks: extractSocialLinks(html),
+        },
+        contact: {
+            emails: extractEmails(html, url),
         },
     };
 
@@ -275,6 +279,9 @@ async function main() {
     console.log(`Open Graph: ${info.meta.ogTitle ? 'sí' : 'no'}`);
     if (info.links.socialLinks) {
         console.log(`Redes sociales: ${Object.keys(info.links.socialLinks).join(', ')}`);
+    }
+    if (info.contact.emails.length) {
+        console.log(`Emails: ${info.contact.emails.join(', ')}`);
     }
 
     // Screenshots

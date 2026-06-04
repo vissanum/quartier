@@ -14,6 +14,7 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const http = require('http');
+const { extractEmails } = require('../lib/emails');
 
 const [,, baseUrl, name] = process.argv;
 
@@ -343,6 +344,29 @@ async function scrapeFullSite() {
   });
   console.log(`   Redes sociales: ${Object.keys(socialLinks).join(', ') || 'ninguna'}`);
 
+  // Contact emails: scan the home plus any contact/legal subpage
+  let emailHtml = homeHtml;
+  for (const pg of allPages) {
+    if (/contact|aviso|legal/i.test(pg.slug)) {
+      const pageFile = path.join(pagesDir, `${pg.slug}.html`);
+      if (fs.existsSync(pageFile)) emailHtml += '\n' + fs.readFileSync(pageFile, 'utf-8');
+    }
+  }
+  const emails = extractEmails(emailHtml, baseUrl);
+  console.log(`   Emails: ${emails.join(', ') || 'ninguno'}`);
+
+  // Fill the project config's email if it exists and is still empty —
+  // never overwrite a hand-curated value
+  const configPath = path.join(process.cwd(), 'projects', name, 'config.json');
+  if (emails.length && fs.existsSync(configPath)) {
+    const projectConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    if (!projectConfig.email) {
+      projectConfig.email = emails[0];
+      fs.writeFileSync(configPath, JSON.stringify(projectConfig, null, 2) + '\n', 'utf-8');
+      console.log(`   → config.json email: ${emails[0]}`);
+    }
+  }
+
   // Colores CSS: extraer de las hojas de estilo de la home
   const colors = { backgrounds: [], texts: [], accents: [] };
   // Read styles.css if it exists
@@ -398,6 +422,7 @@ async function scrapeFullSite() {
       logos,
       favicon,
       socialLinks,
+      emails,
       colors
     },
     pages: allPages.map(pg => ({
