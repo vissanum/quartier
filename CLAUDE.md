@@ -2,6 +2,16 @@
 
 Read and follow the instructions in `PLAYBOOK.md`. That file has the complete workflow.
 
+## Testing
+
+Run `npm test` (Vitest, tests in `test/*.test.js`). Details in `TESTING.md`.
+
+- When writing a new function, write a corresponding test
+- When fixing a bug, write a regression test that would have caught it
+- When adding error handling, write a test that triggers the error
+- When adding a conditional, write tests for BOTH paths
+- Never commit code that makes existing tests fail
+
 ## Claude-specific
 
 When generating HTML pages (home, subpages, showcase), use the `/frontend-design` skill for high-quality, production-grade output.

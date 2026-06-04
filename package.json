@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "AI-powered toolkit for finding and redesigning local business websites",
   "scripts": {
+    "test": "vitest run",
     "cockpit": "node cockpit/server.js",
     "scrape": "node scraper/scrape-site.js",
     "prospect:search": "node prospect/search.js",
@@ -18,5 +19,8 @@
   "dependencies": {
     "cheerio": "^1.0.0",
     "puppeteer": "^24.0.0"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.8"
   }
 }
